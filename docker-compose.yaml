@@ -1,0 +1,12 @@
+services:
+  db:
+    image: postgres
+    container_name: postgres
+    ports:
+      - "5431:5432"
+    environment:
+      - POSTGRES_DB=medicine-management
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - .:/docker-entrypoint-initdb.d
