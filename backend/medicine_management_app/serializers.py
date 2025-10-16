@@ -1,4 +1,6 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from medicine_management_app.models import Medicine, Profile, Category, Usage, Dosage, Reserve, ReserveMedicine, \
     PendingMedicine, ReserveActivity, MedicineIntake
@@ -12,9 +14,19 @@ class MedicineSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = '__all__'
+        fields = ['id', 'age', 'morning_time', 'afternoon_time', 'evening_time', 'night_time', 'is_administrator']
 
 class CategorySerializer(serializers.ModelSerializer):
+    medicines = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='name'
+    )
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'medicines']
+
+class CategoriesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
@@ -32,7 +44,7 @@ class DosageSerializer(serializers.ModelSerializer):
 class ReserveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reserve
-        fields = '__all__'
+        fields = ['id', 'name']
 
 class ReserveMedicineSerializer(serializers.ModelSerializer):
     class Meta:
@@ -52,4 +64,13 @@ class ReserveActivitySerializer(serializers.ModelSerializer):
 class MedicineIntakeSerializer(serializers.ModelSerializer):
     class Meta:
         model = MedicineIntake
-        fields = '__all__'
+        fields = ["reserve_medicine", "usage", "duration_from", "duration_to", "morning_time", "afternoon_time",
+                  "evening_time", "night_time", "last_intake"]
+
+class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=False, validators=[
+        UniqueValidator(queryset=User.objects.all(), message="Email is already registered with another account.")
+    ])
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'password']
