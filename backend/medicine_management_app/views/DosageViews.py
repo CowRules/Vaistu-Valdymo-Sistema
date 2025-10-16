@@ -1,11 +1,18 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from medicine_management_app.models import Dosage
+from medicine_management_app.schema_utils import DEFAULT_ERROR_RESPONSES
 from medicine_management_app.serializers import DosageSerializer
 
-
+@extend_schema(
+    summary="Retrieve details of a dosage",
+    responses={
+        200: DosageSerializer,
+        404: DEFAULT_ERROR_RESPONSES[404],
+    },
+)
 @api_view(['GET'])
 def dosage_detail(request, pk):
     if Dosage.objects.filter(id=pk).exists():
@@ -15,6 +22,15 @@ def dosage_detail(request, pk):
     else:
         return Response({"detail": "Dosage not found"}, status=status.HTTP_404_NOT_FOUND)
 
+@extend_schema(
+    summary="Create a new dosage entry",
+    request=DosageSerializer,
+    responses={
+        201: DosageSerializer,
+        400: DEFAULT_ERROR_RESPONSES[400],
+        401: DEFAULT_ERROR_RESPONSES[401],
+    },
+)
 @api_view(['POST'])
 def dosage_create(request):
     if request.user.is_authenticated:
@@ -26,6 +42,17 @@ def dosage_create(request):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Update an existing dosage",
+    request=DosageSerializer,
+    responses={
+        200: DosageSerializer,
+        400: DEFAULT_ERROR_RESPONSES[400],
+        401: DEFAULT_ERROR_RESPONSES[401],
+        403: DEFAULT_ERROR_RESPONSES[403],
+        404: DEFAULT_ERROR_RESPONSES[404],
+    },
+)
 @api_view(['PUT'])
 def dosage_update(request, pk):
     if request.user.is_authenticated:
@@ -43,7 +70,15 @@ def dosage_update(request, pk):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
-
+@extend_schema(
+    summary="Delete an existing dosage",
+    responses={
+        204: OpenApiResponse(description="Dosage deleted successfully"),
+        401: DEFAULT_ERROR_RESPONSES[401],
+        403: DEFAULT_ERROR_RESPONSES[403],
+        404: DEFAULT_ERROR_RESPONSES[404],
+    },
+)
 @api_view(['DELETE'])
 def dosage_delete(request, pk):
     if request.user.is_authenticated:

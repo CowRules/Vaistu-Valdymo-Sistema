@@ -74,3 +74,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'password']
+
+
+class ErrorSerializer(serializers.Serializer):
+    detail = serializers.CharField(help_text="Error message")

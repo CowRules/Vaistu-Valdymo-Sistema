@@ -3,11 +3,19 @@ from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from medicine_management_app.models import Profile
+from medicine_management_app.schema_utils import DEFAULT_ERROR_RESPONSES
 from medicine_management_app.serializers import ProfileSerializer, UserSerializer
 
-
+@extend_schema(
+    summary="Get current user profile",
+    description="Retrieve the profile of the currently authenticated user.",
+    responses={
+        200: ProfileSerializer,
+        401: DEFAULT_ERROR_RESPONSES[401],
+    },
+)
 @api_view(['GET'])
 def profile_details(request):
     if request.user.is_authenticated:
@@ -17,6 +25,15 @@ def profile_details(request):
     else:
         return Response({'detail': "User unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Register a new user",
+    description="Create a new user account along with a profile.",
+    request=UserSerializer,
+    responses={
+        201: OpenApiResponse(description="User created successfully"),
+        400: DEFAULT_ERROR_RESPONSES[400],
+    },
+)
 @api_view(['POST'])
 def register_user(request):
     serializer = UserSerializer(data=request.data)
@@ -29,6 +46,15 @@ def register_user(request):
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema(
+    summary="Log in a user",
+    description="Authenticate a user with username and password.",
+    request=None,
+    responses={
+        200: OpenApiResponse(description="User logged in successfully"),
+        400: DEFAULT_ERROR_RESPONSES[400],
+    },
+)
 @api_view(['POST'])
 def login_user(request):
     if "username" not in request.POST or "password" not in request.POST:
@@ -42,6 +68,14 @@ def login_user(request):
     else:
         return Response({'detail': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema(
+    summary="Log out the current user",
+    description="Log out the currently authenticated user.",
+    responses={
+        200: OpenApiResponse(description="User logged out successfully"),
+        400: DEFAULT_ERROR_RESPONSES[400],
+    },
+)
 @api_view(['POST'])
 def logout_user(request):
     if request.user.is_authenticated:
@@ -50,6 +84,16 @@ def logout_user(request):
     else:
         return Response({'detail': 'User is not logged in'}, status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema(
+    summary="Update user profile",
+    description="Update the profile of the currently authenticated user.",
+    request=ProfileSerializer,
+    responses={
+        200: ProfileSerializer,
+        400: DEFAULT_ERROR_RESPONSES[400],
+        401: DEFAULT_ERROR_RESPONSES[401],
+    },
+)
 @api_view(['PUT'])
 def update_profile(request):
     if request.user.is_authenticated:
@@ -63,6 +107,16 @@ def update_profile(request):
     else:
         return Response({'detail': "User unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Change user password",
+    description="Change the password of the currently authenticated user.",
+    request=None,
+    responses={
+        200: OpenApiResponse(description="Password changed successfully"),
+        400: DEFAULT_ERROR_RESPONSES[400],
+        401: DEFAULT_ERROR_RESPONSES[401],
+    },
+)
 @api_view(['PUT'])
 def change_password(request):
     if "new_password" not in request.POST:

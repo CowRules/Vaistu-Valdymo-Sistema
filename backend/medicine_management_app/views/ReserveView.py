@@ -1,11 +1,15 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from medicine_management_app.models import Reserve, ReserveMedicine, ReserveActivity
+from medicine_management_app.schema_utils import DEFAULT_ERROR_RESPONSES
 from medicine_management_app.serializers import ReserveSerializer, ReserveMedicineSerializer, ReserveActivitySerializer
 
-
+@extend_schema(
+    summary="List all reserves of the authenticated user",
+    responses={200: ReserveSerializer(many=True), **{401: DEFAULT_ERROR_RESPONSES[401]}},
+)
 @api_view(['GET'])
 def reserve_list(request):
     if request.user.is_authenticated:
@@ -15,6 +19,13 @@ def reserve_list(request):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Get details of a reserve",
+    responses={
+        200: ReserveSerializer,
+        **DEFAULT_ERROR_RESPONSES
+    },
+)
 @api_view(['GET'])
 def reserve_detail(request, pk):
     if request.user.is_authenticated:
@@ -29,6 +40,15 @@ def reserve_detail(request, pk):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Create a new reserve",
+    request=ReserveSerializer,
+    responses={
+        201: ReserveSerializer,
+        400: DEFAULT_ERROR_RESPONSES[400],
+        401: DEFAULT_ERROR_RESPONSES[401],
+    },
+)
 @api_view(['POST'])
 def reserve_create(request):
     if request.user.is_authenticated:
@@ -42,6 +62,14 @@ def reserve_create(request):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Update a reserve",
+    request=ReserveSerializer,
+    responses={
+        200: ReserveSerializer,
+        **DEFAULT_ERROR_RESPONSES
+    },
+)
 @api_view(['PUT'])
 def reserve_update(request, pk):
     if request.user.is_authenticated:
@@ -59,6 +87,13 @@ def reserve_update(request, pk):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Delete a reserve",
+    responses={
+        204: OpenApiResponse(description="Deleted successfully"),
+        **DEFAULT_ERROR_RESPONSES
+    },
+)
 @api_view(['DELETE'])
 def reserve_delete(request, pk):
     if request.user.is_authenticated:
@@ -73,6 +108,13 @@ def reserve_delete(request, pk):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="List all medicines in a reserve",
+    responses={
+        200: ReserveMedicineSerializer(many=True),
+        **DEFAULT_ERROR_RESPONSES
+    },
+)
 @api_view(['GET'])
 def reserve_medicine_list(request, pk):
     if request.user.is_authenticated:
@@ -88,6 +130,13 @@ def reserve_medicine_list(request, pk):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Get details of a medicine in a reserve",
+    responses={
+        200: ReserveMedicineSerializer,
+        **DEFAULT_ERROR_RESPONSES
+    },
+)
 @api_view(['GET'])
 def reserve_medicine_detail(request, pk, med_pk):
     if request.user.is_authenticated:
@@ -105,6 +154,15 @@ def reserve_medicine_detail(request, pk, med_pk):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Add a medicine to a reserve",
+    request=ReserveMedicineSerializer,
+    responses={
+        201: ReserveMedicineSerializer,
+        400: DEFAULT_ERROR_RESPONSES[400],
+        401: DEFAULT_ERROR_RESPONSES[401],
+    },
+)
 @api_view(['POST'])
 def reserve_medicine_add(request):
     if request.user.is_authenticated:
@@ -116,6 +174,14 @@ def reserve_medicine_add(request):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Update a medicine in a reserve",
+    request=ReserveMedicineSerializer,
+    responses={
+        200: ReserveMedicineSerializer,
+        **DEFAULT_ERROR_RESPONSES
+    },
+)
 @api_view(['PUT'])
 def reserve_medicine_update(request, pk, med_pk):
     if request.user.is_authenticated:
@@ -136,6 +202,18 @@ def reserve_medicine_update(request, pk, med_pk):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Consume medicine from a reserve",
+    description="Consumes a specified amount of medicine and logs the activity.",
+    request=ReserveMedicineSerializer,  # or a smaller custom serializer with 'amount' field
+    responses={
+        200: OpenApiResponse(description="Medicine consumed successfully"),
+        400: DEFAULT_ERROR_RESPONSES[400],
+        401: DEFAULT_ERROR_RESPONSES[401],
+        403: DEFAULT_ERROR_RESPONSES[403],
+        404: DEFAULT_ERROR_RESPONSES[404],
+    },
+)
 @api_view(['PUT'])
 def reserve_medicine_consume(request, pk, med_pk):
     if request.user.is_authenticated:
@@ -159,6 +237,13 @@ def reserve_medicine_consume(request, pk, med_pk):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="List reserve consumption activities",
+    responses={
+        200: ReserveActivitySerializer(many=True),
+        **DEFAULT_ERROR_RESPONSES
+    },
+)
 @api_view(['GET'])
 def reserve_activity_details(request, pk):
     if request.user.is_authenticated:

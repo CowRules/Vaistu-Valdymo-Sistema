@@ -1,15 +1,22 @@
 import time
 from datetime import datetime, time
 from django.utils import timezone
-
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from medicine_management_app.models import MedicineIntake, Dosage
+from medicine_management_app.schema_utils import DEFAULT_ERROR_RESPONSES
 from medicine_management_app.serializers import MedicineIntakeSerializer
 
-
+@extend_schema(
+    summary="List all medicine intakes for the authenticated user",
+    responses={
+        200: MedicineIntakeSerializer(many=True),
+        401: DEFAULT_ERROR_RESPONSES[401],
+    },
+)
 @api_view(['GET'])
 def medicine_intake_list(request):
     if request.user.is_authenticated:
@@ -19,6 +26,15 @@ def medicine_intake_list(request):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Retrieve details of a medicine intake",
+    responses={
+        200: MedicineIntakeSerializer,
+        401: DEFAULT_ERROR_RESPONSES[401],
+        403: DEFAULT_ERROR_RESPONSES[403],
+        404: DEFAULT_ERROR_RESPONSES[404],
+    },
+)
 @api_view(['GET'])
 def medicine_intake_detail(request, pk):
     if request.user.is_authenticated:
@@ -33,6 +49,15 @@ def medicine_intake_detail(request, pk):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Create a new medicine intake",
+    request=MedicineIntakeSerializer,
+    responses={
+        201: MedicineIntakeSerializer,
+        400: DEFAULT_ERROR_RESPONSES[400],
+        401: DEFAULT_ERROR_RESPONSES[401],
+    },
+)
 @api_view(['POST'])
 def medicine_intake_create(request):
     if request.user.is_authenticated:
@@ -44,6 +69,17 @@ def medicine_intake_create(request):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Update a medicine intake",
+    request=MedicineIntakeSerializer,
+    responses={
+        200: MedicineIntakeSerializer,
+        400: DEFAULT_ERROR_RESPONSES[400],
+        401: DEFAULT_ERROR_RESPONSES[401],
+        403: DEFAULT_ERROR_RESPONSES[403],
+        404: DEFAULT_ERROR_RESPONSES[404],
+    },
+)
 @api_view(['PUT'])
 def medicine_intake_update(request, pk):
     if request.user.is_authenticated:
@@ -61,6 +97,15 @@ def medicine_intake_update(request, pk):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Delete a medicine intake",
+    responses={
+        204: OpenApiResponse(description="Medicine intake deleted successfully"),
+        401: DEFAULT_ERROR_RESPONSES[401],
+        403: DEFAULT_ERROR_RESPONSES[403],
+        404: DEFAULT_ERROR_RESPONSES[404],
+    },
+)
 @api_view(['DELETE'])
 def medicine_intake_delete(request, pk):
     if request.user.is_authenticated:
@@ -75,6 +120,15 @@ def medicine_intake_delete(request, pk):
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@extend_schema(
+    summary="Retrieve medicine that should be taken right now",
+    description="Checks what time of the day it is and retrieves medicine intakes which have a dosage set for "
+                "the current time of the day and medicine has not been consumed today on this time period.",
+    responses={
+        200: MedicineIntakeSerializer(many=True),
+        401: DEFAULT_ERROR_RESPONSES[401],
+    },
+)
 @api_view(['GET'])
 def retrieve_medicine_past_consumption_time(request):
     if request.user.is_authenticated:
