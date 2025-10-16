@@ -65,7 +65,7 @@ class Dosage(models.Model):
         "Morning": "06:00-12:00",
         "Afternoon": "12:00-17:00",
         "Evening": "17:00-21:00",
-        "Night": "21:00-06:00",
+        "Night": "21:00-00:00",
     }
     amount = models.FloatField()
     time = models.CharField(max_length=100, choices=TIME_CHOICES)
@@ -82,9 +82,10 @@ class PendingMedicine(models.Model):
     }
     is_closed = models.BooleanField(default=False)
     medicine = models.OneToOneField(Medicine, on_delete=models.CASCADE)
-    status = models.CharField(max_length=100, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=100, choices=STATUS_CHOICES, default="pending")
     last_modified = models.DateTimeField(auto_now=True)
     comments = models.TextField(blank=True)
+    review_comments = models.TextField(blank=True)
     def __str__(self):
         return f"{self.medicine} ({self.status})"
 
