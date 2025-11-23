@@ -56,6 +56,7 @@ urlpatterns = [
     path("reserve/<int:pk>/medicine/update/<int:med_pk>", ReserveView.reserve_medicine_update, name="reserve_medicine_update"),
     path("reserve/<int:pk>/medicine/<int:med_pk>/consume", ReserveView.reserve_medicine_consume, name="reserve_medicine_consume"),
     path("reserve/<int:pk>/activity", ReserveView.reserve_activity_details, name="reserve_activity"),
+    path("reserve/<int:pk>/medicine/<int:med_pk>/usages", ReserveView.reserve_medicine_usages, name="reserve_usages"),
 
     #Medicine intake urls
     path("medicine_intakes", MedicineIntakeViews.medicine_intake_list, name="medicine_intake_list"),

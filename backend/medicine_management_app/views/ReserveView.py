@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from medicine_management_app.models import Reserve, ReserveMedicine, ReserveActivity
 from medicine_management_app.schema_utils import DEFAULT_ERROR_RESPONSES
-from medicine_management_app.serializers import ReserveSerializer, ReserveMedicineSerializer, ReserveActivitySerializer
+from medicine_management_app.serializers import ReserveSerializer, ReserveMedicineSerializer, ReserveActivitySerializer, \
+    UsageSerializer
+
 
 @extend_schema(
     summary="List all reserves of the authenticated user",
@@ -256,5 +258,23 @@ def reserve_activity_details(request, pk):
         reserve_activity = ReserveActivity.objects.filter(reserve_medicine__reserve=reserve)
         serializer = ReserveActivitySerializer(reserve_activity, many=True)
         return Response(serializer.data)
+    else:
+        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['GET'])
+def reserve_medicine_usages(request, pk, med_pk):
+    if request.user.is_authenticated:
+        if not Reserve.objects.filter(id=pk).exists():
+            return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
+        reserve = Reserve.objects.get(pk=pk)
+        if not reserve.user == request.user:
+            return Response({"detail": "User does not have access to this reserve"},
+                            status=status.HTTP_403_FORBIDDEN)
+        if not ReserveMedicine.objects.filter(pk=med_pk, reserve=reserve).exists():
+            return Response({"detail": "Reserve medicine not found"}, status=status.HTTP_404_NOT_FOUND)
+        reserve_medicine = ReserveMedicine.objects.get(pk=med_pk, reserve=reserve)
+        usages = reserve_medicine.medicine.usage_set
+        serializer = UsageSerializer(usages, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     else:
         return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
