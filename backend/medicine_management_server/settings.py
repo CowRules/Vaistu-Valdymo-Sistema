@@ -82,11 +82,11 @@ WSGI_APPLICATION = 'medicine_management_server.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'medicine-management',
-        'USER': 'user',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
-        'PORT': '5431',
+        'NAME': 'vvs_database',
+        'USER': 'vvs_database_user',
+        'PASSWORD': 'PqX57vzWz0C4bkKVM8Us3f3Hmquz4U4A',
+        'HOST': 'dpg-d4hhlindiees73bikr90-a',
+        'PORT': '5432',
     }
 }
 
