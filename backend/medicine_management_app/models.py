@@ -5,6 +5,11 @@ from django.db import models
 # Create your models here.
 
 class Profile(models.Model):
+    ROLES = {
+        "guest": "guest",
+        "admin": "admin",
+        "client": "client",
+    }
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     age = models.IntegerField(null=True, blank=True)
     morning_time = models.TimeField(null=True, blank=True)
@@ -12,6 +17,7 @@ class Profile(models.Model):
     evening_time = models.TimeField(null=True, blank=True)
     night_time = models.TimeField(null=True, blank=True)
     is_administrator = models.BooleanField(default=False)
+    role = models.CharField(max_length=10, choices=ROLES.items(), default="guest")
 
     def __str__(self):
         return self.user.username

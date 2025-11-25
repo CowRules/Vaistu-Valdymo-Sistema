@@ -1,8 +1,10 @@
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from medicine_management_app.models import Category, Medicine, Profile
+from medicine_management_app.permissions import IsAdminOrClientOrGuest, IsAdmin
 from medicine_management_app.schema_utils import DEFAULT_ERROR_RESPONSES
 from medicine_management_app.serializers import CategorySerializer, CategoriesSerializer, MedicineSerializer
 
@@ -12,6 +14,7 @@ from medicine_management_app.serializers import CategorySerializer, CategoriesSe
     responses={200: CategoriesSerializer(many=True)},
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminOrClientOrGuest])
 def categories_list(request):
     queryset = Category.objects.all()
     serializer = CategoriesSerializer(queryset, many=True)
@@ -28,19 +31,14 @@ def categories_list(request):
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdmin])
 def category_detail(request, pk):
-    if request.user.is_authenticated:
-        if Profile.objects.get(user=request.user).is_administrator is False:
-            return Response({"detail": "User does not have permission to view this page."},
-                            status=status.HTTP_403_FORBIDDEN)
-        if Category.objects.filter(id=pk).exists():
-            queryset = Category.objects.prefetch_related('medicines').get(id=pk)
-            serializer = CategorySerializer(queryset, many=False)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response({"detail": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
+    if Category.objects.filter(id=pk).exists():
+        queryset = Category.objects.prefetch_related('medicines').get(id=pk)
+        serializer = CategorySerializer(queryset, many=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({"detail": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
 
 @extend_schema(
     summary="Create a new category",
@@ -54,18 +52,13 @@ def category_detail(request, pk):
     },
 )
 @api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdmin])
 def category_create(request):
-    if request.user.is_authenticated:
-        if Profile.objects.get(user=request.user).is_administrator is False:
-            return Response({"detail": "User does not have permission to create new categories."},
-                            status=status.HTTP_403_FORBIDDEN)
-        serializer = CategorySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    serializer = CategorySerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(
     summary="Update a category",
@@ -80,22 +73,17 @@ def category_create(request):
     },
 )
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdmin])
 def category_update(request, pk):
-    if request.user.is_authenticated:
-        if Profile.objects.get(user=request.user).is_administrator is False:
-            return Response({"detail": "User does not have permission to update new categories."},
-                            status=status.HTTP_403_FORBIDDEN)
-        if Category.objects.filter(id=pk).exists():
-            queryset = Category.objects.get(pk=pk)
-            serializer = CategorySerializer(queryset, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"detail": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
+    if Category.objects.filter(id=pk).exists():
+        queryset = Category.objects.get(pk=pk)
+        serializer = CategorySerializer(queryset, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({"detail": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
 
 @extend_schema(
     summary="Delete a category",
@@ -108,19 +96,14 @@ def category_update(request, pk):
     },
 )
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdmin])
 def category_delete(request, pk):
-    if request.user.is_authenticated:
-        if Profile.objects.get(user=request.user).is_administrator is False:
-            return Response({"detail": "User does not have permission to delete new categories."},
-                            status=status.HTTP_403_FORBIDDEN)
-        if Category.objects.filter(id=pk).exists():
-            queryset = Category.objects.get(pk=pk)
-            queryset.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response({"detail": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
+    if Category.objects.filter(id=pk).exists():
+        queryset = Category.objects.get(pk=pk)
+        queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
     else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({"detail": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
 
 @extend_schema(
     summary="List medicines in a category",
@@ -131,6 +114,7 @@ def category_delete(request, pk):
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminOrClientOrGuest])
 def category_medicine(request, pk):
     if Category.objects.filter(id=pk).exists():
         category = Category.objects.get(pk=pk)

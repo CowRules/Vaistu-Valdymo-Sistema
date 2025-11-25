@@ -1,12 +1,18 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiResponse
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 from medicine_management_app.models import Profile
+from medicine_management_app.permissions import IsAdminOrClient, IsAdminOrClientOrGuest
 from medicine_management_app.schema_utils import DEFAULT_ERROR_RESPONSES
 from medicine_management_app.serializers import ProfileSerializer, UserSerializer
+from medicine_management_app.token import MyTokenObtainPairSerializer
+
 
 @extend_schema(
     summary="Get current user profile",
@@ -17,13 +23,11 @@ from medicine_management_app.serializers import ProfileSerializer, UserSerialize
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def profile_details(request):
-    if request.user.is_authenticated:
-        profile = Profile.objects.get(user=request.user)
-        serializer = ProfileSerializer(profile)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    else:
-        return Response({'detail': "User unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+    profile = Profile.objects.get(user=request.user)
+    serializer = ProfileSerializer(profile)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @extend_schema(
     summary="Register a new user",
@@ -35,12 +39,14 @@ def profile_details(request):
     },
 )
 @api_view(['POST'])
+@permission_classes([AllowAny])
+@authentication_classes([])
 def register_user(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         user = User.objects.create_user(username=request.data['username'], email=request.data['email'], password=request.data['password'])
         user.save()
-        profile = Profile.objects.create(user=user)
+        profile = Profile.objects.create(user=user, is_administrator=request.data['is_administrator'], role=request.data['role'])
         profile.save()
         return Response({'detail': 'User created'}, status=status.HTTP_201_CREATED)
     else:
@@ -55,18 +61,69 @@ def register_user(request):
         400: DEFAULT_ERROR_RESPONSES[400],
     },
 )
-@api_view(['POST'])
-def login_user(request):
-    if "username" not in request.POST or "password" not in request.POST:
-        return Response({'detail': "Username and password is required"}, status=status.HTTP_400_BAD_REQUEST)
-    username = request.POST["username"]
-    password = request.POST["password"]
-    user = authenticate(request, username=username, password=password)
-    if user is not None:
-        login(request, user)
-        return Response({'detail': 'User logged in'}, status=status.HTTP_200_OK)
-    else:
-        return Response({'detail': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+@permission_classes([AllowAny])
+@authentication_classes([])
+class LoginTokenObtain(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+    def post(self, request, *args, **kwargs):
+        try:
+            print("in post")
+            response = super().post(request, *args, **kwargs)
+            print("after response")
+            tokens = response.data
+            print("Got tokens")
+            access_token = tokens['access']
+            print("Got access token")
+            refresh_token = tokens['refresh']
+            print("Got refresh token")
+            res = Response()
+            res.data = {'success': True}
+            print("Building response")
+            res.set_cookie(
+                key='access_token',
+                value=access_token,
+                httponly=True,
+                secure=True,
+                samesite='None',
+                path='/'
+            )
+            print("Built access token")
+            res.set_cookie(
+                key='refresh_token',
+                value=refresh_token,
+                httponly=True,
+                secure=True,
+                samesite='None',
+                path='/api/refresh/'
+            )
+            print("Built refresh token")
+            return res
+        except:
+            return Response({'success': False})
+
+@permission_classes([AllowAny])
+@authentication_classes([])
+class RefreshToken(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        try:
+            refresh_token = request.COOKIES.get('refresh_token')
+            request.data['refresh'] = refresh_token
+            response = super().post(request, *args, **kwargs)
+            tokens = response.data
+            access_token = tokens['access']
+            res = Response()
+            res.data = {'refreshed': True}
+            res.set_cookie(
+                key='access_token',
+                value=access_token,
+                httponly=True,
+                secure=True,
+                samesite='None',
+                path='/'
+            )
+            return res
+        except:
+            return Response({'refreshed': False})
 
 @extend_schema(
     summary="Log out the current user",
@@ -77,12 +134,16 @@ def login_user(request):
     },
 )
 @api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminOrClientOrGuest])
 def logout_user(request):
-    if request.user.is_authenticated:
-        logout(request)
-        return Response({'detail': 'User logged out'}, status=status.HTTP_200_OK)
-    else:
-        return Response({'detail': 'User is not logged in'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        res = Response()
+        res.data = {'success': True}
+        res.delete_cookie('access_token', path='/', samesite='None')
+        res.delete_cookie('refresh_token', path='/api/refresh', samesite='None')
+        return res
+    except:
+        return Response({'success': False})
 
 @extend_schema(
     summary="Update user profile",
@@ -95,17 +156,15 @@ def logout_user(request):
     },
 )
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def update_profile(request):
-    if request.user.is_authenticated:
-        profile = Profile.objects.get(user=request.user)
-        serializer = ProfileSerializer(data=request.data, instance=profile)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    profile = Profile.objects.get(user=request.user)
+    serializer = ProfileSerializer(data=request.data, instance=profile)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
     else:
-        return Response({'detail': "User unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(
     summary="Change user password",
@@ -118,13 +177,14 @@ def update_profile(request):
     },
 )
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def change_password(request):
     if "new_password" not in request.POST:
         return Response({'detail': 'New password not provided'}, status=status.HTTP_400_BAD_REQUEST)
-    if request.user.is_authenticated:
-        user = request.user
-        user.set_password(request.POST["new_password"])
-        user.save()
-        return Response({'detail': 'User password changed'}, status=status.HTTP_200_OK)
-    else:
-        return Response({'detail': 'User is not logged in'}, status=status.HTTP_400_BAD_REQUEST)
+    user = request.user
+    user.set_password(request.POST["new_password"])
+    user.save()
+    res = Response({'detail': 'User password changed'}, status=status.HTTP_200_OK)
+    res.delete_cookie('access_token', path='/', samesite='None')
+    res.delete_cookie('refresh_token', path='/api/refresh', samesite='None')
+    return res

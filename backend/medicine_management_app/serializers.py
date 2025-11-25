@@ -14,7 +14,7 @@ class MedicineSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ['id', 'age', 'morning_time', 'afternoon_time', 'evening_time', 'night_time', 'is_administrator']
+        fields = ['id', 'age', 'morning_time', 'afternoon_time', 'evening_time', 'night_time', 'is_administrator', 'role']
 
 class CategorySerializer(serializers.ModelSerializer):
     medicines = serializers.SlugRelatedField(

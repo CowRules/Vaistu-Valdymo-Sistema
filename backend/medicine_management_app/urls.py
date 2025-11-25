@@ -39,10 +39,11 @@ urlpatterns = [
     #Profile urls
     path("profile", ProfileViews.profile_details, name="profile_details"),
     path("register", ProfileViews.register_user, name="register"),
-    path("login", ProfileViews.login_user, name="login_user"),
+    path("login", ProfileViews.LoginTokenObtain.as_view(), name="login_user"),
     path("logout", ProfileViews.logout_user, name="logout_user"),
     path("profile/update", ProfileViews.update_profile, name="update_profile"),
     path("profile/change_password", ProfileViews.change_password, name="change_password"),
+    path("refresh/", ProfileViews.RefreshToken.as_view(), name="refresh_token"),
 
     #Reserve urls
     path("reserves", ReserveView.reserve_list, name="reserves_list"),

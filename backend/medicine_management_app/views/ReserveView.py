@@ -1,8 +1,10 @@
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from medicine_management_app.models import Reserve, ReserveMedicine, ReserveActivity
+from medicine_management_app.permissions import IsAdminOrClientOrGuest, IsAdminOrClient
 from medicine_management_app.schema_utils import DEFAULT_ERROR_RESPONSES
 from medicine_management_app.serializers import ReserveSerializer, ReserveMedicineSerializer, ReserveActivitySerializer, \
     UsageSerializer
@@ -13,13 +15,11 @@ from medicine_management_app.serializers import ReserveSerializer, ReserveMedici
     responses={200: ReserveSerializer(many=True), **{401: DEFAULT_ERROR_RESPONSES[401]}},
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def reserve_list(request):
-    if request.user.is_authenticated:
-        reserves = Reserve.objects.filter(user=request.user)
-        serializer = ReserveSerializer(reserves, many=True)
-        return Response(serializer.data)
-    else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    reserves = Reserve.objects.filter(user=request.user)
+    serializer = ReserveSerializer(reserves, many=True)
+    return Response(serializer.data)
 
 @extend_schema(
     summary="Get details of a reserve",
@@ -29,18 +29,16 @@ def reserve_list(request):
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def reserve_detail(request, pk):
-    if request.user.is_authenticated:
-        if not Reserve.objects.filter(id=pk).exists():
-            return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
-        reserve = Reserve.objects.get(pk=pk)
-        if not reserve.user == request.user:
-            return Response({"detail": "User does not have access to this reserve"},
-                            status=status.HTTP_403_FORBIDDEN)
-        serializer = ReserveSerializer(reserve)
-        return Response(serializer.data)
-    else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    if not Reserve.objects.filter(id=pk).exists():
+        return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
+    reserve = Reserve.objects.get(pk=pk)
+    if not reserve.user == request.user:
+        return Response({"detail": "User does not have access to this reserve"},
+                        status=status.HTTP_403_FORBIDDEN)
+    serializer = ReserveSerializer(reserve)
+    return Response(serializer.data)
 
 @extend_schema(
     summary="Create a new reserve",
@@ -52,17 +50,15 @@ def reserve_detail(request, pk):
     },
 )
 @api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def reserve_create(request):
-    if request.user.is_authenticated:
-        serializer = ReserveSerializer(data=request.data)
-        if serializer.is_valid():
-            reserve = Reserve.objects.create(name=request.data["name"], user=request.user)
-            reserve.save()
-            return Response(ReserveSerializer(reserve).data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer = ReserveSerializer(data=request.data)
+    if serializer.is_valid():
+        reserve = Reserve.objects.create(name=request.data["name"], user=request.user)
+        reserve.save()
+        return Response(ReserveSerializer(reserve).data, status=status.HTTP_201_CREATED)
     else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(
     summary="Update a reserve",
@@ -73,21 +69,19 @@ def reserve_create(request):
     },
 )
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def reserve_update(request, pk):
-    if request.user.is_authenticated:
-        if not Reserve.objects.filter(id=pk).exists():
-            return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
-        reserve = Reserve.objects.get(pk=pk)
-        if not reserve.user == request.user:
-            return Response({"detail": "User does not have access to this reserve"},
-                            status=status.HTTP_403_FORBIDDEN)
-        serializer = ReserveSerializer(data=request.data, instance=reserve)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    if not Reserve.objects.filter(id=pk).exists():
+        return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
+    reserve = Reserve.objects.get(pk=pk)
+    if not reserve.user == request.user:
+        return Response({"detail": "User does not have access to this reserve"},
+                        status=status.HTTP_403_FORBIDDEN)
+    serializer = ReserveSerializer(data=request.data, instance=reserve)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(
     summary="Delete a reserve",
@@ -97,18 +91,16 @@ def reserve_update(request, pk):
     },
 )
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def reserve_delete(request, pk):
-    if request.user.is_authenticated:
-        if not Reserve.objects.filter(id=pk).exists():
-            return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
-        reserve = Reserve.objects.get(pk=pk)
-        if not reserve.user == request.user:
-            return Response({"detail": "User does not have access to this reserve"},
-                            status=status.HTTP_403_FORBIDDEN)
-        reserve.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    if not Reserve.objects.filter(id=pk).exists():
+        return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
+    reserve = Reserve.objects.get(pk=pk)
+    if not reserve.user == request.user:
+        return Response({"detail": "User does not have access to this reserve"},
+                        status=status.HTTP_403_FORBIDDEN)
+    reserve.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 @extend_schema(
     summary="List all medicines in a reserve",
@@ -118,19 +110,17 @@ def reserve_delete(request, pk):
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def reserve_medicine_list(request, pk):
-    if request.user.is_authenticated:
-        if not Reserve.objects.filter(id=pk).exists():
-            return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
-        reserve = Reserve.objects.get(pk=pk)
-        if not reserve.user == request.user:
-            return Response({"detail": "User does not have access to this reserve"},
-                            status=status.HTTP_403_FORBIDDEN)
-        reserve_medicine = ReserveMedicine.objects.filter(reserve=reserve)
-        serializer = ReserveMedicineSerializer(reserve_medicine, many=True)
-        return Response(serializer.data)
-    else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    if not Reserve.objects.filter(id=pk).exists():
+        return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
+    reserve = Reserve.objects.get(pk=pk)
+    if not reserve.user == request.user:
+        return Response({"detail": "User does not have access to this reserve"},
+                        status=status.HTTP_403_FORBIDDEN)
+    reserve_medicine = ReserveMedicine.objects.filter(reserve=reserve)
+    serializer = ReserveMedicineSerializer(reserve_medicine, many=True)
+    return Response(serializer.data)
 
 @extend_schema(
     summary="Get details of a medicine in a reserve",
@@ -140,21 +130,19 @@ def reserve_medicine_list(request, pk):
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def reserve_medicine_detail(request, pk, med_pk):
-    if request.user.is_authenticated:
-        if not Reserve.objects.filter(id=pk).exists():
-            return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
-        reserve = Reserve.objects.get(pk=pk)
-        if not reserve.user == request.user:
-            return Response({"detail": "User does not have access to this reserve"},
-                            status=status.HTTP_403_FORBIDDEN)
-        if not ReserveMedicine.objects.filter(pk=med_pk, reserve=reserve).exists():
-            return Response({"detail": "Reserve medicine not found"}, status=status.HTTP_404_NOT_FOUND)
-        reserve_medicine = ReserveMedicine.objects.get(pk=med_pk, reserve=reserve)
-        serializer = ReserveMedicineSerializer(reserve_medicine)
-        return Response(serializer.data)
-    else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    if not Reserve.objects.filter(id=pk).exists():
+        return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
+    reserve = Reserve.objects.get(pk=pk)
+    if not reserve.user == request.user:
+        return Response({"detail": "User does not have access to this reserve"},
+                        status=status.HTTP_403_FORBIDDEN)
+    if not ReserveMedicine.objects.filter(pk=med_pk, reserve=reserve).exists():
+        return Response({"detail": "Reserve medicine not found"}, status=status.HTTP_404_NOT_FOUND)
+    reserve_medicine = ReserveMedicine.objects.get(pk=med_pk, reserve=reserve)
+    serializer = ReserveMedicineSerializer(reserve_medicine)
+    return Response(serializer.data)
 
 @extend_schema(
     summary="Add a medicine to a reserve",
@@ -166,15 +154,13 @@ def reserve_medicine_detail(request, pk, med_pk):
     },
 )
 @api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def reserve_medicine_add(request):
-    if request.user.is_authenticated:
-        serializer = ReserveMedicineSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    serializer = ReserveMedicineSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(
     summary="Update a medicine in a reserve",
@@ -185,24 +171,22 @@ def reserve_medicine_add(request):
     },
 )
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def reserve_medicine_update(request, pk, med_pk):
-    if request.user.is_authenticated:
-        if not Reserve.objects.filter(id=pk).exists():
-            return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
-        reserve = Reserve.objects.get(pk=pk)
-        if not reserve.user == request.user:
-            return Response({"detail": "User does not have access to this reserve"},
-                            status=status.HTTP_403_FORBIDDEN)
-        if not ReserveMedicine.objects.filter(pk=med_pk, reserve=reserve).exists():
-            return Response({"detail": "Reserve medicine not found"}, status=status.HTTP_404_NOT_FOUND)
-        reserve_medicine = ReserveMedicine.objects.get(pk=med_pk, reserve=reserve)
-        serializer = ReserveMedicineSerializer(data=request.data, instance=reserve_medicine)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    if not Reserve.objects.filter(id=pk).exists():
+        return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
+    reserve = Reserve.objects.get(pk=pk)
+    if not reserve.user == request.user:
+        return Response({"detail": "User does not have access to this reserve"},
+                        status=status.HTTP_403_FORBIDDEN)
+    if not ReserveMedicine.objects.filter(pk=med_pk, reserve=reserve).exists():
+        return Response({"detail": "Reserve medicine not found"}, status=status.HTTP_404_NOT_FOUND)
+    reserve_medicine = ReserveMedicine.objects.get(pk=med_pk, reserve=reserve)
+    serializer = ReserveMedicineSerializer(data=request.data, instance=reserve_medicine)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(
     summary="Consume medicine from a reserve",
@@ -217,27 +201,25 @@ def reserve_medicine_update(request, pk, med_pk):
     },
 )
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def reserve_medicine_consume(request, pk, med_pk):
-    if request.user.is_authenticated:
-        if not Reserve.objects.filter(id=pk).exists():
-            return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
-        reserve = Reserve.objects.get(pk=pk)
-        if not reserve.user == request.user:
-            return Response({"detail": "User does not have access to this reserve"},
-                            status=status.HTTP_403_FORBIDDEN)
-        if not ReserveMedicine.objects.filter(pk=med_pk, reserve=reserve).exists():
-            return Response({"detail": "Reserve medicine not found"}, status=status.HTTP_404_NOT_FOUND)
-        reserve_medicine = ReserveMedicine.objects.get(pk=med_pk, reserve=reserve)
-        if reserve_medicine.amount < request.data['amount']:
-            return Response({"detail": "Insufficient amount"},status=status.HTTP_400_BAD_REQUEST)
-        else:
-            reserve_activity = ReserveActivity.objects.create(reserve_medicine=reserve_medicine, consumed_amount=request.data['amount'])
-            reserve_activity.save()
-            reserve_medicine.amount = reserve_medicine.amount - request.data['amount']
-            reserve_medicine.save()
-            return Response(status=status.HTTP_200_OK)
+    if not Reserve.objects.filter(id=pk).exists():
+        return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
+    reserve = Reserve.objects.get(pk=pk)
+    if not reserve.user == request.user:
+        return Response({"detail": "User does not have access to this reserve"},
+                        status=status.HTTP_403_FORBIDDEN)
+    if not ReserveMedicine.objects.filter(pk=med_pk, reserve=reserve).exists():
+        return Response({"detail": "Reserve medicine not found"}, status=status.HTTP_404_NOT_FOUND)
+    reserve_medicine = ReserveMedicine.objects.get(pk=med_pk, reserve=reserve)
+    if reserve_medicine.amount < request.data['amount']:
+        return Response({"detail": "Insufficient amount"},status=status.HTTP_400_BAD_REQUEST)
     else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+        reserve_activity = ReserveActivity.objects.create(reserve_medicine=reserve_medicine, consumed_amount=request.data['amount'])
+        reserve_activity.save()
+        reserve_medicine.amount = reserve_medicine.amount - request.data['amount']
+        reserve_medicine.save()
+        return Response(status=status.HTTP_200_OK)
 
 @extend_schema(
     summary="List reserve consumption activities",
@@ -247,34 +229,30 @@ def reserve_medicine_consume(request, pk, med_pk):
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def reserve_activity_details(request, pk):
-    if request.user.is_authenticated:
-        if not Reserve.objects.filter(id=pk).exists():
-            return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
-        reserve = Reserve.objects.get(pk=pk)
-        if not reserve.user == request.user:
-            return Response({"detail": "User does not have access to this reserve"},
-                            status=status.HTTP_403_FORBIDDEN)
-        reserve_activity = ReserveActivity.objects.filter(reserve_medicine__reserve=reserve)
-        serializer = ReserveActivitySerializer(reserve_activity, many=True)
-        return Response(serializer.data)
-    else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    if not Reserve.objects.filter(id=pk).exists():
+        return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
+    reserve = Reserve.objects.get(pk=pk)
+    if not reserve.user == request.user:
+        return Response({"detail": "User does not have access to this reserve"},
+                        status=status.HTTP_403_FORBIDDEN)
+    reserve_activity = ReserveActivity.objects.filter(reserve_medicine__reserve=reserve)
+    serializer = ReserveActivitySerializer(reserve_activity, many=True)
+    return Response(serializer.data)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def reserve_medicine_usages(request, pk, med_pk):
-    if request.user.is_authenticated:
-        if not Reserve.objects.filter(id=pk).exists():
-            return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
-        reserve = Reserve.objects.get(pk=pk)
-        if not reserve.user == request.user:
-            return Response({"detail": "User does not have access to this reserve"},
-                            status=status.HTTP_403_FORBIDDEN)
-        if not ReserveMedicine.objects.filter(pk=med_pk, reserve=reserve).exists():
-            return Response({"detail": "Reserve medicine not found"}, status=status.HTTP_404_NOT_FOUND)
-        reserve_medicine = ReserveMedicine.objects.get(pk=med_pk, reserve=reserve)
-        usages = reserve_medicine.medicine.usage_set
-        serializer = UsageSerializer(usages, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    if not Reserve.objects.filter(id=pk).exists():
+        return Response({"detail": "Reserve not found"}, status=status.HTTP_404_NOT_FOUND)
+    reserve = Reserve.objects.get(pk=pk)
+    if not reserve.user == request.user:
+        return Response({"detail": "User does not have access to this reserve"},
+                        status=status.HTTP_403_FORBIDDEN)
+    if not ReserveMedicine.objects.filter(pk=med_pk, reserve=reserve).exists():
+        return Response({"detail": "Reserve medicine not found"}, status=status.HTTP_404_NOT_FOUND)
+    reserve_medicine = ReserveMedicine.objects.get(pk=med_pk, reserve=reserve)
+    usages = reserve_medicine.medicine.usage_set
+    serializer = UsageSerializer(usages, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

@@ -1,8 +1,10 @@
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from medicine_management_app.models import Usage, Dosage
+from medicine_management_app.permissions import IsAdminOrClientOrGuest, IsAdminOrClient
 from medicine_management_app.schema_utils import DEFAULT_ERROR_RESPONSES
 from medicine_management_app.serializers import UsageSerializer, DosageSerializer
 
@@ -11,6 +13,7 @@ from medicine_management_app.serializers import UsageSerializer, DosageSerialize
     responses={200: UsageSerializer(many=True)},
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminOrClientOrGuest])
 def usage_list(request):
     queryset = Usage.objects.all()
     serializer = UsageSerializer(queryset, many=True)
@@ -24,6 +27,7 @@ def usage_list(request):
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminOrClientOrGuest])
 def usage_detail(request, pk):
     if not Usage.objects.filter(id=pk).exists():
         return Response({"detail": "Usage not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -41,15 +45,13 @@ def usage_detail(request, pk):
     },
 )
 @api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def usage_create(request):
-    if request.user.is_authenticated:
-        serializer = UsageSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    serializer = UsageSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(
     summary="Update an existing usage record",
@@ -62,18 +64,16 @@ def usage_create(request):
     },
 )
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def usage_update(request, pk):
-    if request.user.is_authenticated:
-        if not Usage.objects.filter(id=pk).exists():
-            return Response({"detail": "Usage not found"}, status=status.HTTP_404_NOT_FOUND)
-        usage = Usage.objects.get(id=pk)
-        serializer = UsageSerializer(usage, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    if not Usage.objects.filter(id=pk).exists():
+        return Response({"detail": "Usage not found"}, status=status.HTTP_404_NOT_FOUND)
+    usage = Usage.objects.get(id=pk)
+    serializer = UsageSerializer(usage, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(
     summary="Delete a usage record",
@@ -84,14 +84,13 @@ def usage_update(request, pk):
     },
 )
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def usage_delete(request, pk):
-    if request.user.is_authenticated:
-        if not Usage.objects.filter(id=pk).exists():
-            return Response({"detail": "Usage not found"}, status=status.HTTP_404_NOT_FOUND)
-        medicine = Usage.objects.get(pk=pk)
-        medicine.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    if not Usage.objects.filter(id=pk).exists():
+        return Response({"detail": "Usage not found"}, status=status.HTTP_404_NOT_FOUND)
+    medicine = Usage.objects.get(pk=pk)
+    medicine.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 @extend_schema(
     summary="List all dosages for a specific usage",
@@ -101,6 +100,7 @@ def usage_delete(request, pk):
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminOrClientOrGuest])
 def dosage_list(request, pk):
     if not Usage.objects.filter(id=pk).exists():
         return Response({"detail": "Usage not found"}, status=status.HTTP_404_NOT_FOUND)
