@@ -12,9 +12,10 @@ class MedicineSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
     class Meta:
         model = Profile
-        fields = ['id', 'age', 'morning_time', 'afternoon_time', 'evening_time', 'night_time', 'is_administrator', 'role']
+        fields = ['id', 'username', 'age', 'morning_time', 'afternoon_time', 'evening_time', 'night_time', 'is_administrator', 'role']
 
 class CategorySerializer(serializers.ModelSerializer):
     medicines = serializers.SlugRelatedField(

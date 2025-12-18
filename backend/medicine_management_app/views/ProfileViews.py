@@ -23,7 +23,7 @@ from medicine_management_app.token import MyTokenObtainPairSerializer
     },
 )
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsAdminOrClient])
+@permission_classes([IsAuthenticated, IsAdminOrClientOrGuest])
 def profile_details(request):
     profile = Profile.objects.get(user=request.user)
     serializer = ProfileSerializer(profile)
@@ -81,7 +81,7 @@ class LoginTokenObtain(TokenObtainPairView):
             print("Building response")
             res.set_cookie(
                 key='access_token',
-                value=access_token,
+                value=str(access_token),
                 httponly=True,
                 secure=True,
                 samesite='None',
@@ -90,16 +90,16 @@ class LoginTokenObtain(TokenObtainPairView):
             print("Built access token")
             res.set_cookie(
                 key='refresh_token',
-                value=refresh_token,
+                value=str(refresh_token),
                 httponly=True,
                 secure=True,
                 samesite='None',
-                path='/api/refresh/'
+                path='/'
             )
             print("Built refresh token")
             return res
         except:
-            return Response({'success': False})
+            return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
 
 @permission_classes([AllowAny])
 @authentication_classes([])
@@ -123,7 +123,7 @@ class RefreshToken(TokenRefreshView):
             )
             return res
         except:
-            return Response({'refreshed': False})
+            return Response({'refreshed': False}, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(
     summary="Log out the current user",
@@ -134,16 +134,16 @@ class RefreshToken(TokenRefreshView):
     },
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsAdminOrClientOrGuest])
+@permission_classes([IsAuthenticated, IsAdminOrClient])
 def logout_user(request):
     try:
         res = Response()
         res.data = {'success': True}
         res.delete_cookie('access_token', path='/', samesite='None')
-        res.delete_cookie('refresh_token', path='/api/refresh', samesite='None')
+        res.delete_cookie('refresh_token', path='/', samesite='None')
         return res
     except:
-        return Response({'success': False})
+        return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(
     summary="Update user profile",
