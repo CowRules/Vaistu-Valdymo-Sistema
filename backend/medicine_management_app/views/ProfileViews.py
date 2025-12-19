@@ -134,7 +134,7 @@ class RefreshToken(TokenRefreshView):
     },
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsAdminOrClient])
+@permission_classes([IsAuthenticated, IsAdminOrClientOrGuest])
 def logout_user(request):
     try:
         res = Response()
