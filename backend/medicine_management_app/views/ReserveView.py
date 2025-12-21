@@ -241,6 +241,15 @@ def reserve_activity_details(request, pk):
     serializer = ReserveActivitySerializer(reserve_activity, many=True)
     return Response(serializer.data)
 
+@extend_schema(
+    summary="Get usage of medicine in reserve",
+    responses={
+        200: ReserveActivitySerializer(many=True),
+        401: DEFAULT_ERROR_RESPONSES[401],
+        403: DEFAULT_ERROR_RESPONSES[403],
+        404: DEFAULT_ERROR_RESPONSES[404],
+    },
+)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminOrClient])
 def reserve_medicine_usages(request, pk, med_pk):

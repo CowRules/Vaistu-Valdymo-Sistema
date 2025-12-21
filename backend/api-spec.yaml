@@ -1,0 +1,2269 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: 0.0.0
+paths:
+  /api/category:
+    get:
+      operationId: api_category_list
+      description: Retrieve a list of all available medicine categories.
+      summary: List all categories
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Categories'
+          description: ''
+  /api/category/{id}:
+    get:
+      operationId: api_category_retrieve
+      description: Retrieve details of a specific category. Only accessible to administrators.
+      summary: Retrieve category details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/category/{id}/medicine:
+    get:
+      operationId: api_category_medicine_list
+      description: Retrieve all medicines belonging to a specific category.
+      summary: List medicines in a category
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Medicine'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/category/create:
+    post:
+      operationId: api_category_create_create
+      description: Create a new medicine category. Administrator-only endpoint.
+      summary: Create a new category
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+  /api/category/delete/{id}:
+    delete:
+      operationId: api_category_delete_destroy
+      description: Delete a specific category. Administrator-only endpoint.
+      summary: Delete a category
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '204':
+          description: Category deleted successfully.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/category/update/{id}:
+    put:
+      operationId: api_category_update_update
+      description: Update an existing category. Administrator-only endpoint.
+      summary: Update a category
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/dosage/{id}:
+    get:
+      operationId: api_dosage_retrieve
+      summary: Retrieve details of a dosage
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dosage'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/dosage/create:
+    post:
+      operationId: api_dosage_create_create
+      summary: Create a new dosage entry
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dosage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Dosage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Dosage'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dosage'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+  /api/dosage/delete/{id}:
+    delete:
+      operationId: api_dosage_delete_destroy
+      summary: Delete an existing dosage
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '204':
+          description: Dosage deleted successfully
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/dosage/update/{id}:
+    put:
+      operationId: api_dosage_update_update
+      summary: Update an existing dosage
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dosage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Dosage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Dosage'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dosage'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/login:
+    post:
+      operationId: api_login_create
+      description: Authenticate a user with username and password.
+      summary: Log in a user
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: User logged in successfully
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+  /api/logout:
+    post:
+      operationId: api_logout_create
+      description: Log out the currently authenticated user.
+      summary: Log out the current user
+      tags:
+      - api
+      responses:
+        '200':
+          description: User logged out successfully
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+  /api/medicine:
+    get:
+      operationId: api_medicine_list
+      summary: List all medicines
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Medicine'
+          description: ''
+  /api/medicine/{id}:
+    get:
+      operationId: api_medicine_retrieve
+      summary: Retrieve a specific medicine
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Medicine'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/medicine/{id}/usage:
+    get:
+      operationId: api_medicine_usage_list
+      summary: List usages for a specific medicine
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Usage'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/medicine/create:
+    post:
+      operationId: api_medicine_create_create
+      summary: Create a new medicine
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Medicine'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Medicine'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Medicine'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Medicine'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+  /api/medicine/delete/{id}:
+    delete:
+      operationId: api_medicine_delete_destroy
+      summary: Delete a medicine
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '204':
+          description: Deleted successfully
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/medicine/update/{id}:
+    put:
+      operationId: api_medicine_update_update
+      summary: Update an existing medicine
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Medicine'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Medicine'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Medicine'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Medicine'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/medicine_intake/{id}:
+    get:
+      operationId: api_medicine_intake_retrieve
+      summary: Retrieve details of a medicine intake
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicineIntake'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/medicine_intake/create:
+    post:
+      operationId: api_medicine_intake_create_create
+      summary: Create a new medicine intake
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicineIntake'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MedicineIntake'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MedicineIntake'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicineIntake'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+  /api/medicine_intake/delete/{id}:
+    delete:
+      operationId: api_medicine_intake_delete_destroy
+      summary: Delete a medicine intake
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '204':
+          description: Medicine intake deleted successfully
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/medicine_intake/notifications:
+    get:
+      operationId: api_medicine_intake_notifications_list
+      description: Checks what time of the day it is and retrieves medicine intakes
+        which have a dosage set for the current time of the day and medicine has not
+        been consumed today on this time period.
+      summary: Retrieve medicine that should be taken right now
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MedicineIntake'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+  /api/medicine_intake/update/{id}:
+    put:
+      operationId: api_medicine_intake_update_update
+      summary: Update a medicine intake
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicineIntake'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MedicineIntake'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MedicineIntake'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicineIntake'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/medicine_intakes:
+    get:
+      operationId: api_medicine_intakes_list
+      summary: List all medicine intakes for the authenticated user
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MedicineIntake'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+  /api/pending/medicine:
+    get:
+      operationId: api_pending_medicine_list
+      summary: List all pending medicines
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PendingMedicine'
+          description: ''
+  /api/pending/medicine/{id}:
+    get:
+      operationId: api_pending_medicine_retrieve
+      summary: Retrieve details of a pending medicine
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingMedicine'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/pending/medicine/create:
+    post:
+      operationId: api_pending_medicine_create_create
+      summary: Submit a pending medicine for approval
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PendingMedicine'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PendingMedicine'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PendingMedicine'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingMedicine'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+  /api/pending/medicine/update/{id}:
+    put:
+      operationId: api_pending_medicine_update_update
+      summary: Update a pending medicine
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PendingMedicine'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PendingMedicine'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PendingMedicine'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingMedicine'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/profile:
+    get:
+      operationId: api_profile_retrieve
+      description: Retrieve the profile of the currently authenticated user.
+      summary: Get current user profile
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+  /api/profile/change_password:
+    put:
+      operationId: api_profile_change_password_update
+      description: Change the password of the currently authenticated user.
+      summary: Change user password
+      tags:
+      - api
+      responses:
+        '200':
+          description: Password changed successfully
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+  /api/profile/update:
+    put:
+      operationId: api_profile_update_update
+      description: Update the profile of the currently authenticated user.
+      summary: Update user profile
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Profile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Profile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Profile'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+  /api/refresh/:
+    post:
+      operationId: api_refresh_create
+      description: Refrest access token
+      summary: Refresh token
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: Token refreshed successfully
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+  /api/register:
+    post:
+      operationId: api_register_create
+      description: Create a new user account along with a profile.
+      summary: Register a new user
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          description: User created successfully
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+  /api/reserve/{id}:
+    get:
+      operationId: api_reserve_retrieve
+      summary: Get details of a reserve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reserve'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/reserve/{id}/activity:
+    get:
+      operationId: api_reserve_activity_list
+      summary: List reserve consumption activities
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReserveActivity'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/reserve/{id}/medicine:
+    get:
+      operationId: api_reserve_medicine_list
+      summary: List all medicines in a reserve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReserveMedicine'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/reserve/{id}/medicine/{med_pk}:
+    get:
+      operationId: api_reserve_medicine_retrieve
+      summary: Get details of a medicine in a reserve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: med_pk
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReserveMedicine'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/reserve/{id}/medicine/{med_pk}/consume:
+    put:
+      operationId: api_reserve_medicine_consume_update
+      description: Consumes a specified amount of medicine and logs the activity.
+      summary: Consume medicine from a reserve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: med_pk
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReserveMedicine'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReserveMedicine'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReserveMedicine'
+        required: true
+      responses:
+        '200':
+          description: Medicine consumed successfully
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/reserve/{id}/medicine/{med_pk}/usages:
+    get:
+      operationId: api_reserve_medicine_usages_list
+      summary: Get usage of medicine in reserve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: med_pk
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReserveActivity'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/reserve/{id}/medicine/update/{med_pk}:
+    put:
+      operationId: api_reserve_medicine_update_update
+      summary: Update a medicine in a reserve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: med_pk
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReserveMedicine'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReserveMedicine'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReserveMedicine'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReserveMedicine'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/reserve/add_medicine:
+    post:
+      operationId: api_reserve_add_medicine_create
+      summary: Add a medicine to a reserve
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReserveMedicine'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReserveMedicine'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReserveMedicine'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReserveMedicine'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+  /api/reserve/create:
+    post:
+      operationId: api_reserve_create_create
+      summary: Create a new reserve
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reserve'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Reserve'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Reserve'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reserve'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+  /api/reserve/delete/{id}:
+    delete:
+      operationId: api_reserve_delete_destroy
+      summary: Delete a reserve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '204':
+          description: Deleted successfully
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/reserve/update/{id}:
+    put:
+      operationId: api_reserve_update_update
+      summary: Update a reserve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reserve'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Reserve'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Reserve'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reserve'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/reserves:
+    get:
+      operationId: api_reserves_list
+      summary: List all reserves of the authenticated user
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reserve'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+  /api/schema/:
+    get:
+      operationId: api_schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/usage:
+    get:
+      operationId: api_usage_list
+      summary: List all usage records
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Usage'
+          description: ''
+  /api/usage/{id}:
+    get:
+      operationId: api_usage_retrieve
+      summary: Retrieve a specific usage record
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usage'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/usage/{id}/dosages:
+    get:
+      operationId: api_usage_dosages_list
+      summary: List all dosages for a specific usage
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dosage'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/usage/create:
+    post:
+      operationId: api_usage_create_create
+      summary: Create a new usage record
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Usage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Usage'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usage'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+  /api/usage/delete/{id}:
+    delete:
+      operationId: api_usage_delete_destroy
+      summary: Delete a usage record
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      responses:
+        '204':
+          description: Deleted successfully
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+  /api/usage/update/{id}:
+    put:
+      operationId: api_usage_update_update
+      summary: Update an existing usage record
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Usage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Usage'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usage'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not authenticated
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found
+components:
+  schemas:
+    AgeUnitEnum:
+      enum:
+      - y
+      - m
+      - d
+      type: string
+      description: |-
+        * `y` - years
+        * `m` - months
+        * `d` - days
+    BlankEnum:
+      enum:
+      - ''
+    Categories:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+      required:
+      - id
+      - name
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        medicines:
+          type: array
+          items:
+            type: string
+          readOnly: true
+      required:
+      - id
+      - medicines
+      - name
+    Dosage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        amount:
+          type: number
+          format: double
+        time:
+          $ref: '#/components/schemas/TimeEnum'
+        usage:
+          type: integer
+      required:
+      - amount
+      - id
+      - time
+      - usage
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message
+      required:
+      - detail
+    Medicine:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        amount:
+          type: number
+          format: double
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+        is_global:
+          type: boolean
+        added_by:
+          type: integer
+        categories:
+          type: array
+          items:
+            type: integer
+      required:
+      - added_by
+      - amount
+      - categories
+      - id
+      - name
+      - unit
+    MedicineIntake:
+      type: object
+      properties:
+        reserve_medicine:
+          type: integer
+        usage:
+          type: integer
+        duration_from:
+          type: string
+          format: date
+        duration_to:
+          type: string
+          format: date
+          nullable: true
+        morning_time:
+          type: string
+          format: time
+          nullable: true
+        afternoon_time:
+          type: string
+          format: time
+          nullable: true
+        evening_time:
+          type: string
+          format: time
+          nullable: true
+        night_time:
+          type: string
+          format: time
+          nullable: true
+        last_intake:
+          type: string
+          format: date-time
+      required:
+      - reserve_medicine
+      - usage
+    NullEnum:
+      enum:
+      - null
+    PendingMedicine:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        is_closed:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        last_modified:
+          type: string
+          format: date-time
+          readOnly: true
+        comments:
+          type: string
+        review_comments:
+          type: string
+        medicine:
+          type: integer
+      required:
+      - id
+      - last_modified
+      - medicine
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+        age:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        morning_time:
+          type: string
+          format: time
+          nullable: true
+        afternoon_time:
+          type: string
+          format: time
+          nullable: true
+        evening_time:
+          type: string
+          format: time
+          nullable: true
+        night_time:
+          type: string
+          format: time
+          nullable: true
+        is_administrator:
+          type: boolean
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - id
+      - username
+    Reserve:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+      required:
+      - id
+      - name
+    ReserveActivity:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        consumed_amount:
+          type: number
+          format: double
+        date_time:
+          type: string
+          format: date-time
+          readOnly: true
+        reserve_medicine:
+          type: integer
+      required:
+      - consumed_amount
+      - date_time
+      - id
+      - reserve_medicine
+    ReserveMedicine:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        amount:
+          type: number
+          format: double
+        medicine:
+          type: integer
+        reserve:
+          type: integer
+      required:
+      - amount
+      - id
+      - medicine
+      - reserve
+    RoleEnum:
+      enum:
+      - guest
+      - admin
+      - client
+      type: string
+      description: |-
+        * `guest` - guest
+        * `admin` - admin
+        * `client` - client
+    StatusEnum:
+      enum:
+      - a
+      - r
+      - p
+      type: string
+      description: |-
+        * `a` - approved
+        * `r` - rejected
+        * `p` - pending
+    TimeEnum:
+      enum:
+      - Morning
+      - Afternoon
+      - Evening
+      - Night
+      type: string
+      description: |-
+        * `Morning` - 06:00-12:00
+        * `Afternoon` - 12:00-17:00
+        * `Evening` - 17:00-21:00
+        * `Night` - 21:00-00:00
+    UnitEnum:
+      enum:
+      - ml
+      - g
+      - pcs
+      type: string
+      description: |-
+        * `ml` - milliliters
+        * `g` - grams
+        * `pcs` - pieces
+    Usage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        age_from:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        age_to:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        age_unit:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AgeUnitEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        comments:
+          type: string
+        duration_days:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        hours_between:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        medicine:
+          type: integer
+          nullable: true
+      required:
+      - id
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          maxLength: 128
+      required:
+      - id
+      - password
+      - username

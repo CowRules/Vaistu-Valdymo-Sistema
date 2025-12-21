@@ -67,18 +67,12 @@ class LoginTokenObtain(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
     def post(self, request, *args, **kwargs):
         try:
-            print("in post")
             response = super().post(request, *args, **kwargs)
-            print("after response")
             tokens = response.data
-            print("Got tokens")
             access_token = tokens['access']
-            print("Got access token")
             refresh_token = tokens['refresh']
-            print("Got refresh token")
             res = Response()
             res.data = {'success': True}
-            print("Building response")
             res.set_cookie(
                 key='access_token',
                 value=str(access_token),
@@ -87,7 +81,6 @@ class LoginTokenObtain(TokenObtainPairView):
                 samesite='None',
                 path='/'
             )
-            print("Built access token")
             res.set_cookie(
                 key='refresh_token',
                 value=str(refresh_token),
@@ -96,11 +89,19 @@ class LoginTokenObtain(TokenObtainPairView):
                 samesite='None',
                 path='/'
             )
-            print("Built refresh token")
             return res
         except:
             return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema(
+    summary="Refresh token",
+    description="Refrest access token",
+    request=None,
+    responses={
+        200: OpenApiResponse(description="Token refreshed successfully"),
+        400: DEFAULT_ERROR_RESPONSES[400],
+    },
+)
 @permission_classes([AllowAny])
 @authentication_classes([])
 class RefreshToken(TokenRefreshView):
